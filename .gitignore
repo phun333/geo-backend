@@ -1,8 +1,42 @@
+# Derleme çıktıları
 bin/
 obj/
-*.user
-*.suo
-*.userprefs
-.DS_Store
+
+# Rider / VS / VS Code ayar dosyaları
+.vs/
+.idea/
 .vscode/
+
+# Kullanıcıya özgü Visual Studio ayarları
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# NuGet
+packages/
+*.nupkg
+*.snupkg
+project.lock.json
+project.assets.json
+
+# Test sonuçları / örtük çıktılar
+TestResults/
+coverage.*  
+*.coverlet.*
+
+# Loglar
 *.log
+
+# Yerel ayarlar-gizli dosyalar
+appsettings.Development.json   # içinde gizli anahtar varsa commit’leme
+
+# Diğer geçici dosyalar
+_ReSharper*/
+*.dbmdl
+*.pdb
+*.cache
+*.tmp
+
+# macOS'a özgü dosyalar
+.DS_Store
