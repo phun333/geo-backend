@@ -1,10 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-
-using geoproject.Models; // we import the all models from Models folder
+using geoproject.Models;
+using geoproject.Interfaces;
 
 namespace geoproject.Controllers
 {
@@ -12,160 +8,104 @@ namespace geoproject.Controllers
     [Route("api/[controller]")]
     public class NewApiController : ControllerBase
     {
-        private static readonly List<Point> _pointList = new List<Point>();
+        private readonly IPointGetAllService _getAllService;
+        private readonly IPointAddService _addService;
+        private readonly IPointGetByIdService _getByIdService;
+        private readonly IPointUpdateService _updateService;
+        private readonly IPointDeleteService _deleteService;
 
-        //* GET method to retrieve all points
+        public NewApiController(
+            IPointGetAllService getAllService,
+            IPointAddService addService,
+            IPointGetByIdService getByIdService,
+            IPointUpdateService updateService,
+            IPointDeleteService deleteService)
+        {
+            _getAllService = getAllService;
+            _addService = addService;
+            _getByIdService = getByIdService;
+            _updateService = updateService;
+            _deleteService = deleteService;
+        }
+
+        //* Get all points [GET]
 
         [HttpGet]
-        public ActionResult<ApiResponse<List<Point>>> GetAllPoints()
+        public async Task<ActionResult<ApiResponse<List<Point>>>> GetAllPointsAsync()
         {
-            var response = new ApiResponse<List<Point>>
-            {
-            IsSuccess = true,
-            Message = "All points successfully returned",
-            Data = _pointList
-            };
+            var response = await _getAllService.GetAllPointsAsync();
             return Ok(response);
         }
 
-        //* POST method to add a new point
+        //* Add a new point [POST]
 
         [HttpPost]
-        public ActionResult<ApiResponse<Point>> AddPoint(Point p)
+        public async Task<ActionResult<ApiResponse<Point>>> AddPoint(double pointX, double pointY, string name)
         {
-            // Validation for minus ids
-            if (p.Id <= 0)
+            var newPoint = new Point
             {
-                var errorResponse = new ApiResponse<Point> 
-                { 
-                    IsSuccess = false, 
-                    Message = "ID must be greater than 0" 
-                };
-                return BadRequest(errorResponse);
-            }
-            
-            // if its duplicate, return conflict
-            var existingPoint = _pointList.FirstOrDefault(x => x.Id == p.Id);
-            if (existingPoint != null)
-            {
-                var errorResponse = new ApiResponse<Point> 
-                { 
-                    IsSuccess = false, 
-                    Message = $"Point with ID #{p.Id} already exists" 
-                };
-                return Conflict(errorResponse);
-            }
-            
-            // Add the new point to the list
-            _pointList.Add(p);
-            
-            var successResponse = new ApiResponse<Point>
-            {
-                IsSuccess = true,
-                Message = "Point added successfully.",
-                Data = p
+                PointX = pointX,
+                PointY = pointY,
+                Name = name
             };
-            
-            return Created($"/api/NewApi/{p.Id}", successResponse); // 201 Created + Location header
+
+            var response = await _addService.AddPointAsync(newPoint);
+
+            if (!response.IsSuccess)
+            {
+                return BadRequest(response);
+            }
+
+            return CreatedAtAction(nameof(GetPointById), new { id = response.Data!.Id }, response);
+            //! i use Null-forgiving operator here because the response.Data.Id will never be null
+            //! imo its not a good practice to use but this is a simple example, if application grows larger, i should differentiate method
         }
 
-        //* GET method to return a point by ID
+        //* Get point by ID [GET]
 
-         [HttpGet("{id}")]
-        public ActionResult<ApiResponse<Point>> GetPointById(int id)
+        [HttpGet("{id}")]
+        public async Task<ActionResult<ApiResponse<Point>>> GetPointById(int id)
         {
-            var point = _pointList.FirstOrDefault(p => p.Id == id);
-
-             if (id <= 0)
-            {
-                var errorResponse = new ApiResponse<Point> 
-                { 
-                    IsSuccess = false, 
-                    Message = "ID must be greater than 0" 
-                };
-                return BadRequest(errorResponse);
-            }
+            var response = await _getByIdService.GetPointByIdAsync(id);
             
-            if (point == null) // for type safety, we check if point is null (like ts)
+            if (!response.IsSuccess)
             {
-                var errorResponse = new ApiResponse<Point>
-                {
-                    IsSuccess = false,
-                    Message = $"No point with ID #{id} found in the database."
-                };
-                return NotFound(errorResponse);
+                return response.Message.Contains("greater than 0") 
+                    ? BadRequest(response) 
+                    : NotFound(response);
             }
 
-            var successResponse = new ApiResponse<Point>
-            {
-                IsSuccess = true,
-                Message = $"Point with ID #{id} returned successfully.",
-                Data = point
-            };
-            return Ok(successResponse);
+            return Ok(response);
         }
 
-        //* PUT method to update an existing point by ID
+        //* Update point by ID [PUT]
 
         [HttpPut("{id}")]
-        public ActionResult<ApiResponse<Point>> UpdatePoint(int id, double pointX, double pointY, string name)
-        
+        public async Task<ActionResult<ApiResponse<Point>>> UpdatePoint(int id, double pointX, double pointY, string name)
         {
-            // Find the point with the given ID
-            var existingPoint = _pointList.FirstOrDefault(p => p.Id == id);
-            if (existingPoint == null)
-            {
-                var errorResponse = new ApiResponse<Point>
-                {
-                    IsSuccess = false,
-                    Message = $"No point with ID #{id} found in the database."
-                };
-                return NotFound(errorResponse);
-            }
-
-            // Update the existing point with new values
-            existingPoint.PointX = pointX;
-            existingPoint.PointY = pointY;
-            existingPoint.Name = name;
-
-            var successResponse = new ApiResponse<Point>
-            {
-                IsSuccess = true,
-                Message = $"Point with ID #{id} has been successfully updated.",
-                Data = existingPoint // Return the updated point
-            };
-
-            return Ok(successResponse); // Return 200 OK with the updated point
-        }
-        //* DELETE method to remove a point by ID
-
-       [HttpDelete("{id}")]
-        public ActionResult<ApiResponse<Point>> DeletePoint(int id)
-        {
-            // Find the point with the given ID
-            var point = _pointList.FirstOrDefault(p => p.Id == id);
-            if (point == null)
-            {
-                var errorResponse = new ApiResponse<Point>
-                {
-                    IsSuccess = false,
-                    Message = $"No point with ID #{id} found in the database."
-                };
-                return NotFound(errorResponse);
-            }
-
-            // Remove the point from the list
-            _pointList.Remove(point);
-
-            var successResponse = new ApiResponse<Point>
-            {
-                IsSuccess = true,
-                Message = $"Point with ID #{id} has been successfully deleted.",
-                Data = point // deleted point data
-            };
+            var response = await _updateService.UpdatePointAsync(id, pointX, pointY, name);
             
-            return Ok(successResponse); // Return 200 OK with the deleted point data
+            if (!response.IsSuccess)
+            {
+                return NotFound(response);
+            }
+
+            return Ok(response);
         }
-        
+
+        //* Delete point by ID [DELETE]
+
+        [HttpDelete("{id}")]
+        public async Task<ActionResult<ApiResponse<Point>>> DeletePoint(int id)
+        {
+            var response = await _deleteService.DeletePointAsync(id);
+            
+            if (!response.IsSuccess)
+            {
+                return NotFound(response);
+            }
+
+            return Ok(response);
+        }
     }
 }
