@@ -33,8 +33,21 @@ namespace geoproject.Controllers
         [HttpGet]
         public async Task<ActionResult<ApiResponse<List<Point>>>> GetAllPointsAsync()
         {
-            var response = await _getAllService.GetAllPointsAsync();
-            return Ok(response);
+            try
+            {
+                var response = await _getAllService.GetAllPointsAsync();
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error retrieving points: {ex.Message}");
+                //* i write to console error because it is not a good practice to return detailed error messages to the user
+                return StatusCode(500, new ApiResponse<List<Point>>
+                {
+                    IsSuccess = false,
+                    Message = "An error occurred while retrieving points"
+                });
+            }
         }
 
         //* Add a new point [POST]
@@ -42,23 +55,72 @@ namespace geoproject.Controllers
         [HttpPost]
         public async Task<ActionResult<ApiResponse<Point>>> AddPoint(double pointX, double pointY, string name)
         {
-            var newPoint = new Point
+            try
             {
-                PointX = pointX,
-                PointY = pointY,
-                Name = name
-            };
+                //! Validation: coordinate range check
+                if (pointX < -180 || pointX > 180)
+                {
+                    return BadRequest(new ApiResponse<Point>
+                    {
+                        IsSuccess = false,
+                        Message = "Longitude must be between -180 and 180"
+                    });
+                }
 
-            var response = await _addService.AddPointAsync(newPoint);
+                if(pointY < -90 || pointY > 90)
+                {
+                    return BadRequest(new ApiResponse<Point>
+                    {
+                        IsSuccess = false,
+                        Message = "Latitude must be between -90 and 90"
+                    });
+                }
 
-            if (!response.IsSuccess)
-            {
-                return BadRequest(response);
+                var newPoint = new Point
+                {
+                    PointX = pointX,
+                    PointY = pointY,
+                    Name = name
+                };
+
+                var response = await _addService.AddPointAsync(newPoint);
+
+                if (!response.IsSuccess)
+                {
+                    return BadRequest(response);
+                }
+
+                return CreatedAtAction(nameof(GetPointById), new { id = response.Data!.Id }, response);
             }
+            catch (ArgumentNullException ex)
+            {
+                //NOTE : validation errors is makes sense if we return to user
+                return BadRequest(new ApiResponse<Point>
+                {
+                    IsSuccess = false,
+                    Message = ex.Message
+                });
+            }
+            catch (ArgumentException ex)
+            {
+                //NOTE : same thing here
+                return BadRequest(new ApiResponse<Point>
+                {
+                    IsSuccess = false,
+                    Message = ex.Message
+                });
+            }
+            catch (Exception ex)
+            {
+                // NOTE : but if this error type is Systems errors its better to log it and return a generic error message to the user for security reasons
 
-            return CreatedAtAction(nameof(GetPointById), new { id = response.Data!.Id }, response);
-            //! i use Null-forgiving operator here because the response.Data.Id will never be null
-            //! imo its not a good practice to use but this is a simple example, if application grows larger, i should differentiate method
+                Console.WriteLine($"Error adding point: {ex.Message}");
+                return StatusCode(500, new ApiResponse<Point>
+                {
+                    IsSuccess = false,
+                    Message = "An error occurred while adding the point"
+                });
+            }
         }
 
         //* Get point by ID [GET]
@@ -66,16 +128,36 @@ namespace geoproject.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<ApiResponse<Point>>> GetPointById(int id)
         {
-            var response = await _getByIdService.GetPointByIdAsync(id);
-            
-            if (!response.IsSuccess)
+            try
             {
-                return response.Message.Contains("greater than 0") 
-                    ? BadRequest(response) 
-                    : NotFound(response);
-            }
+                var response = await _getByIdService.GetPointByIdAsync(id);
+                
+                if (!response.IsSuccess)
+                {
+                    return response.Message!.Contains("greater than 0") 
+                        ? BadRequest(response) 
+                        : NotFound(response);
+                }
 
-            return Ok(response);
+                return Ok(response);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new ApiResponse<Point>
+                {
+                    IsSuccess = false,
+                    Message = ex.Message
+                });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error retrieving point: {ex.Message}");
+                return StatusCode(500, new ApiResponse<Point>
+                {
+                    IsSuccess = false,
+                    Message = "An error occurred while retrieving the point :"
+                });
+            }
         }
 
         //* Update point by ID [PUT]
@@ -83,14 +165,34 @@ namespace geoproject.Controllers
         [HttpPut("{id}")]
         public async Task<ActionResult<ApiResponse<Point>>> UpdatePoint(int id, double pointX, double pointY, string name)
         {
-            var response = await _updateService.UpdatePointAsync(id, pointX, pointY, name);
-            
-            if (!response.IsSuccess)
+            try
             {
-                return NotFound(response);
-            }
+                var response = await _updateService.UpdatePointAsync(id, pointX, pointY, name);
+                
+                if (!response.IsSuccess)
+                {
+                    return NotFound(response);
+                }
 
-            return Ok(response);
+                return Ok(response);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new ApiResponse<Point>
+                {
+                    IsSuccess = false,
+                    Message = ex.Message
+                });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error updating point: {ex.Message}");
+                return StatusCode(500, new ApiResponse<Point>
+                {
+                    IsSuccess = false,
+                    Message = "An error occurred while updating the point"
+                });
+            }
         }
 
         //* Delete point by ID [DELETE]
@@ -98,14 +200,34 @@ namespace geoproject.Controllers
         [HttpDelete("{id}")]
         public async Task<ActionResult<ApiResponse<Point>>> DeletePoint(int id)
         {
-            var response = await _deleteService.DeletePointAsync(id);
-            
-            if (!response.IsSuccess)
+            try
             {
-                return NotFound(response);
-            }
+                var response = await _deleteService.DeletePointAsync(id);
+                
+                if (!response.IsSuccess)
+                {
+                    return NotFound(response);
+                }
 
-            return Ok(response);
+                return Ok(response);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new ApiResponse<Point>
+                {
+                    IsSuccess = false,
+                    Message = ex.Message
+                });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error deleting point: {ex.Message}");
+                return StatusCode(500, new ApiResponse<Point>
+                {
+                    IsSuccess = false,
+                    Message = "An error occurred while deleting the point"
+                });
+            }
         }
     }
 }
