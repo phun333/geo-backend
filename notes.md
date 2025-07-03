@@ -273,7 +273,3 @@ return response.Message!.Contains("greater than 0")
 - **System Errors** → Show generic message (security)
 - **Logging** → Always log actual errors for debugging
 - **Consistency** → Same error handling pattern across all endpoints
-
-## **Security Note**
->
-> Never expose system internals, database schemas, or sensitive paths in error messages to end users.
