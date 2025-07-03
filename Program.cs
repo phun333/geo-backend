@@ -10,8 +10,11 @@ var builder = WebApplication.CreateBuilder(args);
 //! if we dont use one repo for saving points, the all stats always will be empty
 builder.Services.AddSingleton<IPointRepository, PointRepository>();
 
-// saved the services as scoped
-// for dependency injection
+// NOTE saved the services as scoped
+// NOTE for dependency injection
+// NOTE i.e. every request will use the same instance of the service
+// NOTE if request finish, garbacge collector will remove the service instance
+
 builder.Services.AddScoped<IPointGetAllService, PointGetAllService>();
 builder.Services.AddScoped<IPointAddService, PointAddService>();
 builder.Services.AddScoped<IPointGetByIdService, PointGetByIdService>();

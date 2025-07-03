@@ -5,9 +5,9 @@ namespace geoproject.Repositories
 {
     public class PointRepository : IPointRepository
     {
-        // singleton pattern - all instances share the same list
+        // Note : singleton pattern - all instances share the same list
         private static readonly List<Point> _points = new List<Point>();
-        private static int _nextId = 1; // To generate unique IDs for new points
+        private static int _nextId = 1;
 
         public async Task<List<Point>> GetAllAsync()
         {

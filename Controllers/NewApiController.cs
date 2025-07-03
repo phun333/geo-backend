@@ -19,7 +19,8 @@ namespace geoproject.Controllers
             IPointAddService addService,
             IPointGetByIdService getByIdService,
             IPointUpdateService updateService,
-            IPointDeleteService deleteService)
+            IPointDeleteService deleteService
+            )
         {
             _getAllService = getAllService;
             _addService = addService;

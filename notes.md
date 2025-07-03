@@ -218,7 +218,7 @@ catch (ArgumentNullException ex)
     return BadRequest(new ApiResponse<Point>
     {
         IsSuccess = false,
-        Message = ex.Message  // ✅ Safe to show user
+        Message = ex.Message  // Safe to show user
     });
 }
 ```
@@ -228,48 +228,21 @@ catch (ArgumentNullException ex)
 ```csharp
 catch (Exception ex)
 {
-    Console.WriteLine($"Error: {ex.Message}");  // ✅ Log for developers
+    Console.WriteLine($"Error: {ex.Message}");  //  Log for developers
     return StatusCode(500, new ApiResponse<Point>
     {
         IsSuccess = false,
-        Message = "Generic error message"  // ✅ Hide system details
+        Message = "Generic error message"  //  Hide system details
     });
 }
 ```
 
-## **HTTP Status Codes**
+## Lifetime Comparison
 
-| Scenario | Status Code | Method |
-|----------|-------------|--------|
-| Success | 200 | `Ok(response)` |
-| Created | 201 | `CreatedAtAction(...)` |
-| Validation Error | 400 | `BadRequest(response)` |
-| Not Found | 404 | `NotFound(response)` |
-| System Error | 500 | `StatusCode(500, response)` |
+### Singleton
 
-## **Service Response Pattern**
+uygulama baslangıcı acılır, sonu kapanır, shared data için kullanılır
 
-### **Success Response:**
+### Scoped
 
-```csharp
-if (!response.IsSuccess)
-{
-    return BadRequest(response);  // Service handles business logic
-}
-return Ok(response);
-```
-
-### **ID Validation Logic:**
-
-```csharp
-return response.Message!.Contains("greater than 0") 
-    ? BadRequest(response)   // Invalid ID
-    : NotFound(response);    // Valid ID but not found
-```
-
-## **Key Principles**
-
-- **Validation Errors** → Show `ex.Message` (user can fix)
-- **System Errors** → Show generic message (security)
-- **Logging** → Always log actual errors for debugging
-- **Consistency** → Same error handling pattern across all endpoints
+ req başı yaratılır, req sonu biter, business logic için kullanılır.
