@@ -40,3 +40,8 @@ _ReSharper*/
 
 # macOS'a özgü dosyalar
 .DS_Store
+
+# self exp
+
+appsettings.json
+# içinde gizli anahtar varsa commit’leme
