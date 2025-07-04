@@ -54,7 +54,7 @@ namespace geoproject.Controllers
         //* Add a new point [POST]
 
         [HttpPost]
-        public async Task<ActionResult<ApiResponse<Point>>> AddPoint(double pointX, double pointY, string name)
+        public async Task<ActionResult<ApiResponse<Point>>> AddPoint(double pointX, double pointY, string name, CoordinateType coordinateType)
         {
             try
             {
@@ -81,7 +81,8 @@ namespace geoproject.Controllers
                 {
                     PointX = pointX,
                     PointY = pointY,
-                    Name = name
+                    Name = name,
+                    CoordinateType = CoordinateType.Point
                 };
 
                 var response = await _addService.AddPointAsync(newPoint);
@@ -164,11 +165,11 @@ namespace geoproject.Controllers
         //* Update point by ID [PUT]
 
         [HttpPut("{id}")]
-        public async Task<ActionResult<ApiResponse<Point>>> UpdatePoint(int id, double pointX, double pointY, string name)
+        public async Task<ActionResult<ApiResponse<Point>>> UpdatePoint(int id, double pointX, double pointY, string name, CoordinateType coordinateType)
         {
             try
             {
-                var response = await _updateService.UpdatePointAsync(id, pointX, pointY, name);
+                var response = await _updateService.UpdatePointAsync(id, pointX, pointY, name, coordinateType);
                 
                 if (!response.IsSuccess)
                 {
