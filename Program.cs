@@ -2,19 +2,21 @@ using geoproject.Interfaces;
 using geoproject.Models;
 using geoproject.Services;
 using geoproject.Repositories;
+using geoproject.Data;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// saved the repository as a singleton
-// Singleton, Scoped, Transient -> Dependency Injection lifetime management
-//! if we dont use one repo for saving points, the all stats always will be empty
-builder.Services.AddSingleton<IPointRepository, PointRepository>();
+//! Database connection
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// NOTE saved the services as scoped
-// NOTE for dependency injection
-// NOTE i.e. every request will use the same instance of the service
-// NOTE if request finish, garbacge collector will remove the service instance
+//! we use postresql so no more using memory shared singleton repository
+builder.Services.AddScoped<IPointRepository, PointRepository>();
 
+//! all services are scoped
+//! this means that a new instance of the service is created for each request
+//! this is important for database operations to ensure that each request has its own context
 builder.Services.AddScoped<IPointGetAllService, PointGetAllService>();
 builder.Services.AddScoped<IPointAddService, PointAddService>();
 builder.Services.AddScoped<IPointGetByIdService, PointGetByIdService>();
@@ -29,6 +31,24 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
+
+//! Auto migrate on startup (Development only)
+#if DEBUG
+using (var scope = app.Services.CreateScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    try
+    {
+        context.Database.EnsureCreated(); // Creates database and tables if they dont exist
+        Console.WriteLine("Database connection successful!");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Database connection failed: {ex.Message}");
+        Console.WriteLine("Make sure PostgreSQL is running and connection string is correct.");
+    }
+}
+#endif
 
 // Configure the HTTP request pipeline.
 app.UseSwagger();
