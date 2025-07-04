@@ -1,27 +1,20 @@
 using geoproject.Models;
 using geoproject.Interfaces;
+using geoproject.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace geoproject.Repositories
 {
     public class PointRepository : IPointRepository
     {
-        // Note : singleton pattern - all instances share the same list
-        private static readonly List<Point> _points = new List<Point>();
-        private static int _nextId = 1;
+        private readonly ApplicationDbContext _context;
 
-        public async Task<List<Point>> GetAllAsync()
+        public PointRepository(ApplicationDbContext context)
         {
-            return await Task.FromResult(_points.ToList());
+            _context = context;
         }
 
-        public async Task<Point?> GetByIdAsync(int id)
-        {
-            var point = _points.FirstOrDefault(p => p.Id == id);
-            return await Task.FromResult(point);
-        }
-        
-
-         public async Task<Point> AddAsync(Point point)
+        public async Task<Point> AddAsync(Point point)
         {
             if (point == null)
                 throw new ArgumentNullException(nameof(point), "Point cannot be null");
@@ -29,16 +22,27 @@ namespace geoproject.Repositories
             if (string.IsNullOrWhiteSpace(point.Name))
                 throw new ArgumentException("Point name cannot be empty", nameof(point));
 
-            //* assign a unique ID to the new point, 
-            //* first value will be always 1
-            point.Id = _nextId; 
-            _nextId++;
+            //* Set default values
+            point.CoordinateType = CoordinateType.Point;
 
-            _points.Add(point);
-            return await Task.FromResult(point);
+            _context.Points.Add(point);
+            await _context.SaveChangesAsync();
+            return point;
         }
 
-        public async Task<Point?> UpdateAsync(int id, double pointX, double pointY, string name)
+        public async Task<Point?> GetByIdAsync(int id)
+        {
+            return await _context.Points
+                .FirstOrDefaultAsync(p => p.Id == id);
+        }
+
+        public async Task<List<Point>> GetAllAsync()
+        {
+            return await _context.Points
+            .ToListAsync();
+        }
+
+        public async Task<Point?> UpdateAsync(int id, double pointX, double pointY, string name, CoordinateType coordinateType)
         {
             if (id <= 0)
                 throw new ArgumentException("ID must be greater than 0", nameof(id));
@@ -46,15 +50,18 @@ namespace geoproject.Repositories
             if (string.IsNullOrWhiteSpace(name))
                 throw new ArgumentException("Point name cannot be empty", nameof(name));
 
-            var existingPoint = _points.FirstOrDefault(p => p.Id == id);
+            var existingPoint = await _context.Points.FirstOrDefaultAsync(p => p.Id == id);
             if (existingPoint != null)
             {
                 existingPoint.PointX = pointX;
                 existingPoint.PointY = pointY;
                 existingPoint.Name = name;
-                return await Task.FromResult(existingPoint);
+                existingPoint.CoordinateType = coordinateType;
+                
+                await _context.SaveChangesAsync();
+                return existingPoint;
             }
-            return await Task.FromResult<Point?>(null);
+            return null;
         }
 
         public async Task<bool> DeleteAsync(int id)
@@ -62,13 +69,14 @@ namespace geoproject.Repositories
             if (id <= 0)
                 throw new ArgumentException("ID must be greater than 0", nameof(id));
 
-            var point = _points.FirstOrDefault(p => p.Id == id);
+            var point = await _context.Points.FirstOrDefaultAsync(p => p.Id == id);
             if (point != null)
             {
-                _points.Remove(point);
-                return await Task.FromResult(true);
+                _context.Points.Remove(point);
+                await _context.SaveChangesAsync();
+                return true;
             }
-            return await Task.FromResult(false);
+            return false;
         }
 
         public async Task<bool> ExistsAsync(int id)
@@ -76,8 +84,15 @@ namespace geoproject.Repositories
             if (id <= 0)
                 throw new ArgumentException("ID must be greater than 0", nameof(id));
 
-            var exists = _points.Any(p => p.Id == id);
-            return await Task.FromResult(exists);
+            return await _context.Points.AnyAsync(p => p.Id == id);
+        }
+
+        //* Additional methods for coordinate type filtering
+        public async Task<List<Point>> GetByCoordinateTypeAsync(CoordinateType coordinateType)
+        {
+            return await _context.Points
+                .Where(p => p.CoordinateType == coordinateType)
+                .ToListAsync();
         }
     }
 }
