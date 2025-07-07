@@ -6,7 +6,7 @@ namespace geoproject.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class NewApiController : ControllerBase
+    public class PointsController : ControllerBase
     {
         private readonly IPointGetAllService _getAllService;
         private readonly IPointAddService _addService;
@@ -14,7 +14,7 @@ namespace geoproject.Controllers
         private readonly IPointUpdateService _updateService;
         private readonly IPointDeleteService _deleteService;
 
-        public NewApiController(
+        public PointsController(
             IPointGetAllService getAllService,
             IPointAddService addService,
             IPointGetByIdService getByIdService,
@@ -54,35 +54,35 @@ namespace geoproject.Controllers
         //* Add a new point [POST]
 
         [HttpPost]
-        public async Task<ActionResult<ApiResponse<Point>>> AddPoint(double pointX, double pointY, string name, CoordinateType coordinateType)
+        public async Task<ActionResult<ApiResponse<Point>>> AddPoint(string geometry, string name, CoordinateType coordinateType)
         {
             try
             {
-                //! Validation: coordinate range check
-                if (pointX < -180 || pointX > 180)
+                //! Validation: Geometry format check
+                if (string.IsNullOrWhiteSpace(geometry))
                 {
                     return BadRequest(new ApiResponse<Point>
                     {
                         IsSuccess = false,
-                        Message = "Longitude must be between -180 and 180"
+                        Message = "Geometry cannot be empty"
                     });
                 }
 
-                if(pointY < -90 || pointY > 90)
+                // Basic coordinate validation based on coordinate type
+                if (!IsValidGeometryFormat(geometry, coordinateType))
                 {
                     return BadRequest(new ApiResponse<Point>
                     {
                         IsSuccess = false,
-                        Message = "Latitude must be between -90 and 90"
+                        Message = GetGeometryFormatHelp(coordinateType)
                     });
                 }
 
                 var newPoint = new Point
                 {
-                    PointX = pointX,
-                    PointY = pointY,
+                    Geometry = geometry,
                     Name = name,
-                    CoordinateType = CoordinateType.Point
+                    CoordinateType = coordinateType
                 };
 
                 var response = await _addService.AddPointAsync(newPoint);
@@ -165,11 +165,11 @@ namespace geoproject.Controllers
         //* Update point by ID [PUT]
 
         [HttpPut("{id}")]
-        public async Task<ActionResult<ApiResponse<Point>>> UpdatePoint(int id, double pointX, double pointY, string name, CoordinateType coordinateType)
+        public async Task<ActionResult<ApiResponse<Point>>> UpdatePoint(int id, string geometry, string name, CoordinateType coordinateType)
         {
             try
             {
-                var response = await _updateService.UpdatePointAsync(id, pointX, pointY, name, coordinateType);
+                var response = await _updateService.UpdatePointAsync(id, geometry, name, coordinateType);
                 
                 if (!response.IsSuccess)
                 {
@@ -230,6 +230,59 @@ namespace geoproject.Controllers
                     Message = "An error occurred while deleting the point"
                 });
             }
+        }
+
+        //* Helper methods for geometry validation
+        private bool IsValidGeometryFormat(string geometry, CoordinateType coordinateType)
+        {
+            try
+            {
+                var trimmed = geometry.Trim();
+                var parts = trimmed.Split(',').Select(p => p.Trim()).ToArray();
+
+                switch (coordinateType)
+                {
+                    case CoordinateType.Point:
+                        // Point: "x y" - should have one coordinate pair
+                        return IsValidCoordinatePair(trimmed);
+
+                    case CoordinateType.Line:
+                        // Line: "x1 y1, x2 y2" - should have at least 2 coordinate pairs
+                        return parts.Length >= 2 && parts.All(IsValidCoordinatePair);
+
+                    case CoordinateType.Polygon:
+                        // Polygon: "x1 y1, x2 y2, x3 y3, x1 y1" - should have at least 4 coordinate pairs (closed)
+                        return parts.Length >= 4 && parts.All(IsValidCoordinatePair);
+
+                    default:
+                        return false;
+                }
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        private bool IsValidCoordinatePair(string coordinatePair)
+        {
+            var coords = coordinatePair.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            return coords.Length == 2 && 
+                   double.TryParse(coords[0], out var x) && 
+                   double.TryParse(coords[1], out var y) &&
+                   x >= -180 && x <= 180 && // Longitude validation
+                   y >= -90 && y <= 90;     // Latitude validation
+        }
+
+        private string GetGeometryFormatHelp(CoordinateType coordinateType)
+        {
+            return coordinateType switch
+            {
+                CoordinateType.Point => "Point format: 'longitude latitude' (e.g., '28.9784 41.0082')",
+                CoordinateType.Line => "Line format: 'lon1 lat1, lon2 lat2' (e.g., '28.9784 41.0082, 32.8597 39.9334')",
+                CoordinateType.Polygon => "Polygon format: 'lon1 lat1, lon2 lat2, lon3 lat3, lon1 lat1' (closed polygon)",
+                _ => "Invalid coordinate type"
+            };
         }
     }
 }
