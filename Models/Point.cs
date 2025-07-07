@@ -7,12 +7,11 @@ namespace geoproject.Models
         public int Id { get; set; }
         
         [Required]
-        public double PointX { get; set; }
+        [StringLength(500)]
+        public string Geometry { get; set; } = string.Empty; // Coordinate values: "28.9784 41.0082"
         
         [Required]
-        public double PointY { get; set; }
-        
-        [Required]
+        [StringLength(100)]
         public string Name { get; set; } = string.Empty;
         
         [Required]

@@ -42,19 +42,21 @@ namespace geoproject.Repositories
             .ToListAsync();
         }
 
-        public async Task<Point?> UpdateAsync(int id, double pointX, double pointY, string name, CoordinateType coordinateType)
+        public async Task<Point?> UpdateAsync(int id, string geometry, string name, CoordinateType coordinateType)
         {
             if (id <= 0)
                 throw new ArgumentException("ID must be greater than 0", nameof(id));
 
             if (string.IsNullOrWhiteSpace(name))
                 throw new ArgumentException("Point name cannot be empty", nameof(name));
+                
+            if (string.IsNullOrWhiteSpace(geometry))
+                throw new ArgumentException("Geometry cannot be empty", nameof(geometry));
 
             var existingPoint = await _context.Points.FirstOrDefaultAsync(p => p.Id == id);
             if (existingPoint != null)
             {
-                existingPoint.PointX = pointX;
-                existingPoint.PointY = pointY;
+                existingPoint.Geometry = geometry;
                 existingPoint.Name = name;
                 existingPoint.CoordinateType = coordinateType;
                 
