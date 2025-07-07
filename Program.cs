@@ -25,6 +25,18 @@ builder.Services.AddScoped<IPointDeleteService, PointDeleteService>();
 
 // Add services to the container.
 
+//! CORS policy for frontend communication
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(policy =>
+    {
+        policy.WithOrigins("http://localhost:3000")  // React frontend URL
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials();
+    });
+});
+
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -53,6 +65,9 @@ using (var scope = app.Services.CreateScope())
 // Configure the HTTP request pipeline.
 app.UseSwagger();
 app.UseSwaggerUI();
+
+//! Enable CORS before authorization
+app.UseCors();
 
 // app.UseHttpsRedirection(); -> i ignore https redirection for simplicity
 
