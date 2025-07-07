@@ -12,9 +12,9 @@ namespace geoproject.Services
             _pointRepository = pointRepository;
         }
 
-        public async Task<ApiResponse<Point>> UpdatePointAsync(int id, double pointX, double pointY, string name, CoordinateType coordinateType)
+        public async Task<ApiResponse<Point>> UpdatePointAsync(int id, string geometry, string name, CoordinateType coordinateType)
         {
-            var updatedPoint = await _pointRepository.UpdateAsync(id, pointX, pointY, name, coordinateType);
+            var updatedPoint = await _pointRepository.UpdateAsync(id, geometry, name, coordinateType);
             
             if (updatedPoint == null)
             {
