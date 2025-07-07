@@ -28,13 +28,10 @@ namespace geoproject.Data
                     .IsRequired()
                     .HasMaxLength(100);
                 
-                entity.Property(e => e.PointX)
+                entity.Property(e => e.Geometry)
                     .IsRequired()
-                    .HasColumnType("decimal(18,6)");
-                
-                entity.Property(e => e.PointY)
-                    .IsRequired()
-                    .HasColumnType("decimal(18,6)");
+                    .HasMaxLength(500)
+                    .HasComment("Coordinate values based on CoordinateType (Point: 'x y', Line: 'x1 y1, x2 y2', Polygon: 'x1 y1, x2 y2, ...')");
                 
                 entity.Property(e => e.CoordinateType)
                     .IsRequired()
@@ -43,25 +40,38 @@ namespace geoproject.Data
 
                 //* Index for better query performance
                 entity.HasIndex(e => e.CoordinateType);
+                entity.HasIndex(e => e.Geometry); //* Spatial queries için
             });
 
-            //* Seed data - default points
+            //* Seed data - default points with coordinate values only
             modelBuilder.Entity<Point>().HasData(
                 new Point
                 {
                     Id = 1,
-                    PointX = 41.0082,
-                    PointY = 28.9784,
+                    Geometry = "28.9784 41.0082", // Istanbul coordinates (Longitude Latitude)
                     Name = "Istanbul",
                     CoordinateType = CoordinateType.Point
                 },
                 new Point
                 {
                     Id = 2,
-                    PointX = 39.9334,
-                    PointY = 32.8597,
+                    Geometry = "32.8597 39.9334", // Ankara coordinates (Longitude Latitude)
                     Name = "Ankara",
                     CoordinateType = CoordinateType.Point
+                },
+                new Point
+                {
+                    Id = 3,
+                    Geometry = "28.9784 41.0082, 32.8597 39.9334", // Istanbul to Ankara route points
+                    Name = "Istanbul-Ankara Route",
+                    CoordinateType = CoordinateType.Line
+                },
+                new Point
+                {
+                    Id = 4,
+                    Geometry = "28.5 40.5, 29.5 40.5, 29.5 41.5, 28.5 41.5, 28.5 40.5", // Istanbul region polygon points
+                    Name = "Istanbul Region",
+                    CoordinateType = CoordinateType.Polygon
                 }
             );
         }
