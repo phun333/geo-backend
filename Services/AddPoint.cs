@@ -1,5 +1,6 @@
 using geoproject.Models;
 using geoproject.Interfaces;
+using geoproject.Resources;
 
 namespace geoproject.Services
 {
@@ -20,7 +21,7 @@ namespace geoproject.Services
             return new ApiResponse<Point>
             {
                 IsSuccess = true,
-                Message = $"Point added successfully with ID #{addedPoint.Id}",
+                Message = string.Format(Messages.Success.PointCreated, addedPoint.Id),
                 Data = addedPoint
             };
         }

@@ -1,5 +1,6 @@
 using geoproject.Models;
 using geoproject.Interfaces;
+using geoproject.Resources;
 
 namespace geoproject.Services
 {
@@ -21,14 +22,14 @@ namespace geoproject.Services
                 return new ApiResponse<Point>
                 {
                     IsSuccess = false,
-                    Message = $"No point with ID #{id} found in the database."
+                    Message = string.Format(Messages.Errors.PointNotFound, id)
                 };
             }
 
             return new ApiResponse<Point>
             {
                 IsSuccess = true,
-                Message = $"Point with ID #{id} has been successfully updated.",
+                Message = string.Format(Messages.Success.PointUpdated, id),
                 Data = updatedPoint
             };
         }

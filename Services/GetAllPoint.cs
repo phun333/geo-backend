@@ -1,5 +1,6 @@
 using geoproject.Models;
 using geoproject.Interfaces;
+using geoproject.Resources;
 
 namespace geoproject.Services
 {
@@ -19,7 +20,7 @@ namespace geoproject.Services
             var response = new ApiResponse<List<Point>>
             {
                 IsSuccess = true,
-                Message = "All points successfully returned",
+                Message = Messages.Success.AllPointsRetrieved,
                 Data = points
             };
             

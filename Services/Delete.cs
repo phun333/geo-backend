@@ -1,5 +1,6 @@
 using geoproject.Models;
 using geoproject.Interfaces;
+using geoproject.Resources;
 
 namespace geoproject.Services
 {
@@ -20,7 +21,7 @@ namespace geoproject.Services
                 return new ApiResponse<Point>
                 {
                     IsSuccess = false,
-                    Message = $"No point with ID #{id} found in the database."
+                    Message = string.Format(Messages.Errors.PointNotFound, id)
                 };
             }
 
@@ -29,7 +30,7 @@ namespace geoproject.Services
             return new ApiResponse<Point>
             {
                 IsSuccess = true,
-                Message = $"Point with ID #{id} has been successfully deleted.",
+                Message = string.Format(Messages.Success.PointDeleted, id),
                 Data = point
             };
         }

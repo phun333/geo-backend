@@ -1,6 +1,7 @@
 using geoproject.Models;
 using geoproject.Interfaces;
 using geoproject.Data;
+using geoproject.Resources;
 using Microsoft.EntityFrameworkCore;
 
 namespace geoproject.Repositories
@@ -17,10 +18,10 @@ namespace geoproject.Repositories
         public async Task<Point> AddAsync(Point point)
         {
             if (point == null)
-                throw new ArgumentNullException(nameof(point), "Point cannot be null");
+                throw new ArgumentNullException(nameof(point), Messages.Errors.PointNull);
 
             if (string.IsNullOrWhiteSpace(point.Name))
-                throw new ArgumentException("Point name cannot be empty", nameof(point));
+                throw new ArgumentException(Messages.Errors.PointNameEmpty, nameof(point));
 
             //* Set default values
             point.CoordinateType = CoordinateType.Point;
@@ -45,13 +46,13 @@ namespace geoproject.Repositories
         public async Task<Point?> UpdateAsync(int id, string geometry, string name, CoordinateType coordinateType)
         {
             if (id <= 0)
-                throw new ArgumentException("ID must be greater than 0", nameof(id));
+                throw new ArgumentException(Messages.Errors.InvalidId, nameof(id));
 
             if (string.IsNullOrWhiteSpace(name))
-                throw new ArgumentException("Point name cannot be empty", nameof(name));
+                throw new ArgumentException(Messages.Errors.PointNameEmpty, nameof(name));
                 
             if (string.IsNullOrWhiteSpace(geometry))
-                throw new ArgumentException("Geometry cannot be empty", nameof(geometry));
+                throw new ArgumentException(Messages.Errors.GeometryEmpty, nameof(geometry));
 
             var existingPoint = await _context.Points.FirstOrDefaultAsync(p => p.Id == id);
             if (existingPoint != null)
@@ -69,7 +70,7 @@ namespace geoproject.Repositories
         public async Task<bool> DeleteAsync(int id)
         {
             if (id <= 0)
-                throw new ArgumentException("ID must be greater than 0", nameof(id));
+                throw new ArgumentException(Messages.Errors.InvalidId, nameof(id));
 
             var point = await _context.Points.FirstOrDefaultAsync(p => p.Id == id);
             if (point != null)
@@ -84,7 +85,7 @@ namespace geoproject.Repositories
         public async Task<bool> ExistsAsync(int id)
         {
             if (id <= 0)
-                throw new ArgumentException("ID must be greater than 0", nameof(id));
+                throw new ArgumentException(Messages.Errors.InvalidId, nameof(id));
 
             return await _context.Points.AnyAsync(p => p.Id == id);
         }

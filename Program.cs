@@ -3,6 +3,7 @@ using geoproject.Models;
 using geoproject.Services;
 using geoproject.Repositories;
 using geoproject.Data;
+using geoproject.Resources;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -52,12 +53,12 @@ using (var scope = app.Services.CreateScope())
     try
     {
         context.Database.EnsureCreated(); // Creates database and tables if they dont exist
-        Console.WriteLine("Database connection successful!");
+        Console.WriteLine(Messages.Success.DatabaseConnected);
     }
     catch (Exception ex)
     {
-        Console.WriteLine($"Database connection failed: {ex.Message}");
-        Console.WriteLine("Make sure PostgreSQL is running and connection string is correct.");
+        Console.WriteLine(string.Format(Messages.Errors.DatabaseConnectionFailed, ex.Message));
+        Console.WriteLine(Messages.Errors.DatabaseSetupGuide);
     }
 }
 #endif

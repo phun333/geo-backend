@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using geoproject.Models;
 using geoproject.Interfaces;
+using geoproject.Resources;
 
 namespace geoproject.Controllers
 {
@@ -46,7 +47,7 @@ namespace geoproject.Controllers
                 return StatusCode(500, new ApiResponse<List<Point>>
                 {
                     IsSuccess = false,
-                    Message = "An error occurred while retrieving points"
+                    Message = string.Format(Messages.Errors.GeneralError, Messages.Operations.Retrieving)
                 });
             }
         }
@@ -64,7 +65,7 @@ namespace geoproject.Controllers
                     return BadRequest(new ApiResponse<Point>
                     {
                         IsSuccess = false,
-                        Message = "Geometry cannot be empty"
+                        Message = Messages.Errors.GeometryEmpty
                     });
                 }
 
@@ -120,7 +121,7 @@ namespace geoproject.Controllers
                 return StatusCode(500, new ApiResponse<Point>
                 {
                     IsSuccess = false,
-                    Message = "An error occurred while adding the point"
+                    Message = string.Format(Messages.Errors.GeneralError, Messages.Operations.Adding)
                 });
             }
         }
@@ -157,7 +158,7 @@ namespace geoproject.Controllers
                 return StatusCode(500, new ApiResponse<Point>
                 {
                     IsSuccess = false,
-                    Message = "An error occurred while retrieving the point :"
+                    Message = string.Format(Messages.Errors.GeneralError, Messages.Operations.RetrievingPoint)
                 });
             }
         }
@@ -192,7 +193,7 @@ namespace geoproject.Controllers
                 return StatusCode(500, new ApiResponse<Point>
                 {
                     IsSuccess = false,
-                    Message = "An error occurred while updating the point"
+                    Message = string.Format(Messages.Errors.GeneralError, Messages.Operations.Updating)
                 });
             }
         }
@@ -227,7 +228,7 @@ namespace geoproject.Controllers
                 return StatusCode(500, new ApiResponse<Point>
                 {
                     IsSuccess = false,
-                    Message = "An error occurred while deleting the point"
+                    Message = string.Format(Messages.Errors.GeneralError, Messages.Operations.Deleting)
                 });
             }
         }
@@ -278,10 +279,10 @@ namespace geoproject.Controllers
         {
             return coordinateType switch
             {
-                CoordinateType.Point => "Point format: 'longitude latitude' (e.g., '28.9784 41.0082')",
-                CoordinateType.Line => "Line format: 'lon1 lat1, lon2 lat2' (e.g., '28.9784 41.0082, 32.8597 39.9334')",
-                CoordinateType.Polygon => "Polygon format: 'lon1 lat1, lon2 lat2, lon3 lat3, lon1 lat1' (closed polygon)",
-                _ => "Invalid coordinate type"
+                CoordinateType.Point => Messages.GeometryHelp.PointFormat,
+                CoordinateType.Line => Messages.GeometryHelp.LineFormat,
+                CoordinateType.Polygon => Messages.GeometryHelp.PolygonFormat,
+                _ => Messages.GeometryHelp.InvalidCoordinateType
             };
         }
     }
