@@ -45,6 +45,14 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
+//* for better debugging experience (self exp)
+
+#if DEBUG
+Console.WriteLine("Running in DEBUG mode (Development)");
+#else
+    Console.WriteLine("Running in RELEASE mode (Production)");
+#endif
+
 //! Auto migrate on startup (Development only)
 #if DEBUG
 using (var scope = app.Services.CreateScope())
