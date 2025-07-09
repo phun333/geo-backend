@@ -2,7 +2,7 @@ namespace geoproject.Resources
 {
     public static class Messages
     {
-        // Success Messages
+        //* Success Messages
         public static class Success
         {
             public const string PointCreated = "Point added successfully with ID #{0}";
@@ -14,7 +14,7 @@ namespace geoproject.Resources
             public const string DatabaseMigrated = "Database migrated successfully!";
         }
 
-        // Error Messages
+        //*  Error Messages
         public static class Errors
         {
             public const string PointNotFound = "No point with ID #{0} found in the database.";
@@ -31,7 +31,7 @@ namespace geoproject.Resources
             public const string DatabaseSetupGuide = "Make sure PostgreSQL is running and connection string is correct.";
         }
 
-        // Validation Messages
+        //* Validation Messages
         public static class Validation
         {
             public const string PointRequired = "Point cannot be null";
@@ -42,7 +42,7 @@ namespace geoproject.Resources
             public const string GeometryMaxLength = "Geometry cannot exceed 500 characters";
         }
 
-        // Geometry Format Help
+        //* Geometry Format Help
         public static class GeometryHelp
         {
             public const string PointFormat = "Point format: 'longitude latitude' (e.g., '28.9784 41.0082')";
@@ -52,7 +52,7 @@ namespace geoproject.Resources
             public const string InvalidCoordinateType = "Invalid coordinate type";
         }
 
-        // Operation Types (for generic error messages)
+        //* Operation Types (for generic error messages)
         public static class Operations
         {
             public const string Retrieving = "retrieving points";
