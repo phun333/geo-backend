@@ -13,6 +13,8 @@ namespace geoproject.Data
         }
 
         public DbSet<Point> Points { get; set; }
+        // NOTE : this dbset, EF Core will use to map the Point entity to the database table.
+        // NOTE : it allows us to perform CRUD operations on Point entities in the database.
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -23,16 +25,16 @@ namespace geoproject.Data
             {
                 entity.HasKey(e => e.Id);
                 entity.Property(e => e.Id).ValueGeneratedOnAdd();
-                
+
                 entity.Property(e => e.Name)
                     .IsRequired()
                     .HasMaxLength(100);
-                
+
                 entity.Property(e => e.Geometry)
                     .IsRequired()
                     .HasMaxLength(500)
                     .HasComment("Coordinate values based on CoordinateType (Point: 'x y', Line: 'x1 y1, x2 y2', Polygon: 'x1 y1, x2 y2, ...')");
-                
+
                 entity.Property(e => e.CoordinateType)
                     .IsRequired()
                     .HasConversion<int>() //* Enum to int conversion

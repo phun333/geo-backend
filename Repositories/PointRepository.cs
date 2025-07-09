@@ -25,9 +25,9 @@ namespace geoproject.Repositories
 
             //* Set default values
             point.CoordinateType = CoordinateType.Point;
-
-            _context.Points.Add(point);
-            await _context.SaveChangesAsync();
+            
+            _context.Points.Add(point); //* change tracker
+            await _context.SaveChangesAsync(); //* commit changes to the database
             return point;
         }
 
