@@ -244,16 +244,21 @@ namespace geoproject.Controllers
                 switch (coordinateType)
                 {
                     case CoordinateType.Point:
-                        // Point: "x y" - should have one coordinate pair
                         return IsValidCoordinatePair(trimmed);
 
                     case CoordinateType.Line:
-                        // Line: "x1 y1, x2 y2" - should have at least 2 coordinate pairs
                         return parts.Length >= 2 && parts.All(IsValidCoordinatePair);
 
                     case CoordinateType.Polygon:
-                        // Polygon: "x1 y1, x2 y2, x3 y3, x1 y1" - should have at least 4 coordinate pairs (closed)
-                        return parts.Length >= 4 && parts.All(IsValidCoordinatePair);
+                        // Poligon kapalı olmalı ve 3 ila 10 köşeye sahip olmalıdır.
+                        // Bu, string içinde 4 ila 11 koordinat çifti olması gerektiği anlamına gelir.
+                        if (parts.Length < 4 || parts.Length > 11)
+                        {
+                            return false;
+                        }
+                        
+                        // Kapalılığı ve tüm parçaların geçerli koordinat çiftleri olduğunu kontrol et.
+                        return parts.First() == parts.Last() && parts.All(IsValidCoordinatePair);
 
                     default:
                         return false;

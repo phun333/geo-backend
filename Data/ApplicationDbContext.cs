@@ -36,7 +36,6 @@ namespace geoproject.Data
                     .HasComment("Coordinate values based on CoordinateType (Point: 'x y', Line: 'x1 y1, x2 y2', Polygon: 'x1 y1, x2 y2, ...')");
 
                 entity.Property(e => e.CoordinateType)
-                    .IsRequired()
                     .HasConversion<int>() //* Enum to int conversion
                     .HasDefaultValue(CoordinateType.Point);
 
@@ -74,6 +73,13 @@ namespace geoproject.Data
                     Geometry = "28.5 40.5, 29.5 40.5, 29.5 41.5, 28.5 41.5, 28.5 40.5", // Istanbul region polygon points
                     Name = "Istanbul Region",
                     CoordinateType = CoordinateType.Polygon
+                },
+                new Point
+                {
+                    Id = 5,
+                    Name = "Heptagon Example",
+                    CoordinateType = CoordinateType.Polygon,
+                    Geometry = "35.0 41.0, 36.0 41.5, 36.5 42.5, 36.0 43.5, 35.0 44.0, 34.0 43.0, 34.5 42.0, 35.0 41.0"
                 }
             );
         }
