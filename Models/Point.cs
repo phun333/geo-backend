@@ -14,7 +14,6 @@ namespace geoproject.Models
         [StringLength(100)]
         public string Name { get; set; } = string.Empty;
         
-        [Required]
-        public CoordinateType CoordinateType { get; set; } = CoordinateType.Point;
+        public CoordinateType? CoordinateType { get; set; }
     }
 }

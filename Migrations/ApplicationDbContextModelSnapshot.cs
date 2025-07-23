@@ -29,7 +29,7 @@ namespace geoproject.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("CoordinateType")
+                    b.Property<int?>("CoordinateType")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
                         .HasDefaultValue(1);
@@ -81,6 +81,13 @@ namespace geoproject.Migrations
                             CoordinateType = 3,
                             Geometry = "28.5 40.5, 29.5 40.5, 29.5 41.5, 28.5 41.5, 28.5 40.5",
                             Name = "Istanbul Region"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            CoordinateType = 3,
+                            Geometry = "35.0 41.0, 36.0 41.5, 36.5 42.5, 36.0 43.5, 35.0 44.0, 34.0 43.0, 34.5 42.0, 35.0 41.0",
+                            Name = "Heptagon Example"
                         });
                 });
 #pragma warning restore 612, 618

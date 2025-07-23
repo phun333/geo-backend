@@ -23,11 +23,8 @@ namespace geoproject.Repositories
             if (string.IsNullOrWhiteSpace(point.Name))
                 throw new ArgumentException(Messages.Errors.PointNameEmpty, nameof(point));
 
-            //* Set default values
-            point.CoordinateType = CoordinateType.Point;
-            
-            _context.Points.Add(point); //* change tracker
-            await _context.SaveChangesAsync(); //* commit changes to the database
+            _context.Points.Add(point);
+            await _context.SaveChangesAsync();
             return point;
         }
 

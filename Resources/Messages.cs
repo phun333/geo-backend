@@ -47,7 +47,7 @@ namespace geoproject.Resources
         {
             public const string PointFormat = "Point format: 'longitude latitude' (e.g., '28.9784 41.0082')";
             public const string LineFormat = "Line format: 'lon1 lat1, lon2 lat2' (e.g., '28.9784 41.0082, 32.8597 39.9334')";
-            public const string PolygonFormat = "Polygon format: 'lon1 lat1, lon2 lat2, lon3 lat3, lon1 lat1' (closed polygon)";
+            public const string PolygonFormat = "Polygon format: 'lon1 lat1, ..., lon1 lat1'. It must be a closed polygon with 3 to 10 vertices.";
             public const string CoordinateLimits = "Longitude: -180 to 180, Latitude: -90 to 90";
             public const string InvalidCoordinateType = "Invalid coordinate type";
         }
